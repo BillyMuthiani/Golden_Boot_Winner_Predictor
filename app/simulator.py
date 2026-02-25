@@ -1,6 +1,6 @@
+import os
 import pandas as pd
 import numpy as np
-import os
 
 
 def run_golden_boot_simulation(
@@ -9,11 +9,14 @@ def run_golden_boot_simulation(
     blend_factor=0.7,
     n_simulations=100000
 ):
-    # Get project root (one level above app/)
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # Move one level up from app/ to project root
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
     player_stats_full_path = os.path.join(BASE_DIR, player_stats_path)
     schedule_full_path = os.path.join(BASE_DIR, schedule_path)
+
+    print("Reading from:", player_stats_full_path)
+    print("Reading from:", schedule_full_path)
 
     player_stats = pd.read_csv(player_stats_full_path)
     schedule = pd.read_csv(schedule_full_path)
