@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 
 
 def run_golden_boot_simulation(
@@ -11,8 +12,12 @@ def run_golden_boot_simulation(
     # ==============================
     # LOAD DATA
     # ==============================
-    player_stats = pd.read_csv(player_stats_path)
-    schedule = pd.read_csv(schedule_path)
+    
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    player_stats = pd.read_csv(os.path.join(BASE_DIR, player_stats_path))
+    schedule = pd.read_csv(os.path.join(BASE_DIR, schedule_path))
 
     # ==============================
     # CALCULATE REMAINING MATCHES
