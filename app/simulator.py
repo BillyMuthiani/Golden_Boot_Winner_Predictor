@@ -9,14 +9,15 @@ def run_golden_boot_simulation(
     blend_factor=0.7,
     n_simulations=100000
 ):
-    # Move one level up from app/ to project root
-    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    print("Current file location:", __file__)
+    print("Current working directory:", os.getcwd())
 
-    player_stats_full_path = os.path.join(BASE_DIR, player_stats_path)
-    schedule_full_path = os.path.join(BASE_DIR, schedule_path)
+    # Hardcode root for debugging
+    player_stats_full_path = "/app/data/player_stats.csv"
+    schedule_full_path = "/app/data/schedule.csv"
 
-    print("Reading from:", player_stats_full_path)
-    print("Reading from:", schedule_full_path)
+    print("Trying path:", player_stats_full_path)
+    print("Trying path:", schedule_full_path)
 
     player_stats = pd.read_csv(player_stats_full_path)
     schedule = pd.read_csv(schedule_full_path)
