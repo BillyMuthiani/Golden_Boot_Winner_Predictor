@@ -7,21 +7,26 @@ def run_golden_boot_simulation(
     blend_factor=0.7,
     n_simulations=100000
 ):
-    # Project root = one level above app/
-    PROJECT_ROOT = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..")
+    # Get project root (one level above app/)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+    print("Project root:", project_root)
+
+    player_stats_full_path = os.path.join(
+        project_root, "data", "player_stats.csv"
     )
 
-    player_stats_path = os.path.join(PROJECT_ROOT, "data", "player_stats.csv")
-    schedule_path = os.path.join(PROJECT_ROOT, "data", "schedule.csv")
+    schedule_full_path = os.path.join(
+        project_root, "data", "schedule.csv"
+    )
 
-    print("Reading:", player_stats_path)
-    print("Reading:", schedule_path)
+    print("Trying path:", player_stats_full_path)
+    print("Trying path:", schedule_full_path)
 
-    player_stats = pd.read_csv(player_stats_path)
-    schedule = pd.read_csv(schedule_path)
+    player_stats = pd.read_csv(player_stats_full_path)
+    schedule = pd.read_csv(schedule_full_path)
 
-    # ... rest of your simulation code ...
+    # rest of simulation...
 
     
     completed = schedule[schedule["is_result"] == True]
