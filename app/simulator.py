@@ -3,29 +3,16 @@ import pandas as pd
 import numpy as np
 
 
-def run_golden_boot_simulation(
-    blend_factor=0.7,
-    n_simulations=100000
-):
-    # Get project root (one level above app/)
-    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def run_golden_boot_simulation(league: str, season: str, n_simulations=100000):
+    blend_factor = 0.3
 
-    print("Project root:", project_root)
+    safe_league = league.replace(" ", "-")
 
-    player_stats_full_path = os.path.join(
-        project_root, "data", "player_stats.csv"
-    )
+    player_path = f"data/player_stats_{safe_league}_{season}.csv"
+    schedule_path = f"data/schedule_{safe_league}_{season}.csv"
 
-    schedule_full_path = os.path.join(
-        project_root, "data", "schedule.csv"
-    )
-
-    print("Trying path:", player_stats_full_path)
-    print("Trying path:", schedule_full_path)
-
-    player_stats = pd.read_csv(player_stats_full_path)
-    schedule = pd.read_csv(schedule_full_path)
-
+    player_stats = pd.read_csv(player_path)
+    schedule = pd.read_csv(schedule_path) 
     # rest of simulation...
 
     

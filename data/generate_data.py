@@ -1,14 +1,24 @@
 import soccerdata as sd
 import pandas as pd
+import os
 
-print("Fetching Understat data...")
 
-understat = sd.Understat(leagues='ENG-Premier League', seasons='2025')
+def generate_data(league: str, season: str):
 
-player_stats = understat.read_player_season_stats().reset_index()
-schedule = understat.read_schedule().reset_index()
+    print(f"Fetching {league} data for {season}...")
 
-player_stats.to_csv("data/player_stats.csv", index=False)
-schedule.to_csv("data/schedule.csv", index=False)
+    understat = sd.Understat(leagues=league, seasons=season)
 
-print("CSV files saved successfully.")
+    player_stats = understat.read_player_season_stats().reset_index()
+    schedule = understat.read_schedule().reset_index()
+
+    # Safe filename formatting
+    safe_league = league.replace(" ", "-")
+
+    player_path = f"data/player_stats_{safe_league}_{season}.csv"
+    schedule_path = f"data/schedule_{safe_league}_{season}.csv"
+
+    player_stats.to_csv(player_path, index=False)
+    schedule.to_csv(schedule_path, index=False)
+
+    print("CSV files saved successfully.")
