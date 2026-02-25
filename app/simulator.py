@@ -4,23 +4,24 @@ import numpy as np
 
 
 def run_golden_boot_simulation(
-    player_stats_path="data/player_stats.csv",
-    schedule_path="data/schedule.csv",
     blend_factor=0.7,
     n_simulations=100000
 ):
-    print("Current file location:", __file__)
-    print("Current working directory:", os.getcwd())
+    # Project root = one level above app/
+    PROJECT_ROOT = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..")
+    )
 
-    # Hardcode root for debugging
-    player_stats_full_path = "data/player_stats.csv"
-    schedule_full_path = "data/schedule.csv"
+    player_stats_path = os.path.join(PROJECT_ROOT, "data", "player_stats.csv")
+    schedule_path = os.path.join(PROJECT_ROOT, "data", "schedule.csv")
 
-    print("Trying path:", player_stats_full_path)
-    print("Trying path:", schedule_full_path)
+    print("Reading:", player_stats_path)
+    print("Reading:", schedule_path)
 
-    player_stats = pd.read_csv(player_stats_full_path)
-    schedule = pd.read_csv(schedule_full_path)
+    player_stats = pd.read_csv(player_stats_path)
+    schedule = pd.read_csv(schedule_path)
+
+    # ... rest of your simulation code ...
 
     
     completed = schedule[schedule["is_result"] == True]
