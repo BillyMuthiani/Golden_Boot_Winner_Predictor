@@ -39,7 +39,7 @@ def run_simulation(n_simulations: int = 100000,
     for r in results:
         db.add(GoldenBootResult(
             player_name=r["player"],
-            win_probability=r["win_probability"]
+            win_probability=r["prob_top_scorer"]
         ))
 
     db.commit()
