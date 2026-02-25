@@ -17,3 +17,11 @@ class Prediction(Base):
     expected_total_goals = Column(Float)
 
     probability = Column(Float)
+
+
+class GoldenBootResult(Base):
+    __tablename__ = "golden_boot_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    player_name = Column(String, index=True)
+    win_probability = Column(Float)    
