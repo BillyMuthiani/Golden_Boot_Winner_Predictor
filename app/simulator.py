@@ -13,8 +13,8 @@ def run_golden_boot_simulation(
     print("Current working directory:", os.getcwd())
 
     # Hardcode root for debugging
-    player_stats_full_path = "/data/player_stats.csv"
-    schedule_full_path = "/data/schedule.csv"
+    player_stats_full_path = "data/player_stats.csv"
+    schedule_full_path = "data/schedule.csv"
 
     print("Trying path:", player_stats_full_path)
     print("Trying path:", schedule_full_path)
