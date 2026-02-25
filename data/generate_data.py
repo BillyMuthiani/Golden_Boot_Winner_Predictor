@@ -3,7 +3,7 @@ import pandas as pd
 
 print("Fetching Understat data...")
 
-understat = sd.Understat(leagues='GER-Bundesliga', seasons='2025')
+understat = sd.Understat(leagues='ENG-Premier League', seasons='2025')
 
 player_stats = understat.read_player_season_stats().reset_index()
 schedule = understat.read_schedule().reset_index()
