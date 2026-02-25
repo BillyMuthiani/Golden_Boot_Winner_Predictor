@@ -9,19 +9,16 @@ def run_golden_boot_simulation(
     blend_factor=0.7,
     n_simulations=100000
 ):
-    # ==============================
-    # LOAD DATA
-    # ==============================
     
-
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-    player_stats = pd.read_csv(os.path.join(BASE_DIR, player_stats_path))
-    schedule = pd.read_csv(os.path.join(BASE_DIR, schedule_path))
+    player_stats_full_path = os.path.join(BASE_DIR, player_stats_path)
+    schedule_full_path = os.path.join(BASE_DIR, schedule_path)
 
-    # ==============================
-    # CALCULATE REMAINING MATCHES
-    # ==============================
+    player_stats = pd.read_csv(player_stats_full_path)
+    schedule = pd.read_csv(schedule_full_path)
+
+    
     completed = schedule[schedule["is_result"] == True]
 
     home_played = completed.groupby("home_team").size()
@@ -46,9 +43,7 @@ def run_golden_boot_simulation(
 
     player_stats["games_remaining"] = player_stats["games_remaining"].fillna(0)
 
-    # ==============================
-    # ADVANCED METRICS
-    # ==============================
+    
 
     # xG per 90
     player_stats["xG_per_90"] = np.where(
@@ -93,9 +88,9 @@ def run_golden_boot_simulation(
         (player_stats["remaining_minutes"] / 90)
     )
 
-    # ==============================
+    
     # FILTER CONTENDERS
-    # ==============================
+    
     contenders = player_stats[
         (player_stats["position"].str.contains("F|M", na=False)) &
         (player_stats["minutes"] >= 700) &
@@ -105,9 +100,9 @@ def run_golden_boot_simulation(
     if contenders.empty:
         return []
 
-    # ==============================
+    
     # MONTE CARLO SIMULATION
-    # ==============================
+    
 
     # Add minutes uncertainty (injury/rotation risk)
     minutes_noise = np.random.normal(
@@ -132,9 +127,9 @@ def run_golden_boot_simulation(
         sim_remaining
     )
 
-    # ==============================
+    
     # WINNER PROBABILITY
-    # ==============================
+    
     max_per_sim = sim_total.max(axis=0)
     is_top = (sim_total == max_per_sim).astype(float)
 
@@ -142,16 +137,16 @@ def run_golden_boot_simulation(
         is_top.mean(axis=1) * 100
     )
 
-    # ==============================
+    
     # EXPECTED & CONFIDENCE INTERVALS
-    # ==============================
+    
     contenders["expected_total"] = sim_total.mean(axis=1)
     contenders["p5_total"] = np.percentile(sim_total, 5, axis=1)
     contenders["p95_total"] = np.percentile(sim_total, 95, axis=1)
 
-    # ==============================
+    
     # FINAL RANKING (BY PROBABILITY)
-    # ==============================
+    
     result = contenders.sort_values(
         "prob_top_scorer",
         ascending=False
