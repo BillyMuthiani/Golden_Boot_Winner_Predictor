@@ -23,5 +23,6 @@ class GoldenBootResult(Base):
     __tablename__ = "golden_boot_results"
 
     id = Column(Integer, primary_key=True, index=True)
+    league = Column(String, index=True)
     player_name = Column(String, index=True)
     win_probability = Column(Float)    
