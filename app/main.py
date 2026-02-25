@@ -33,15 +33,13 @@ def run_simulation(n_simulations: int = 100000,
 
     results = run_golden_boot_simulation(n_simulations=n_simulations)
 
-    # Clear old results
     db.query(GoldenBootResult).delete()
     db.commit()
 
-    # Save new ones
-    for player, prob in results.items():
+    for r in results:
         db.add(GoldenBootResult(
-            player_name=player,
-            win_probability=prob
+            player_name=r["player"],
+            win_probability=r["win_probability"]
         ))
 
     db.commit()
