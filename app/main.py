@@ -10,6 +10,9 @@ app = FastAPI()
 
 Base.metadata.create_all(bind=engine)
 
+import soccerdata
+print("Soccerdata version:", soccerdata.__version__)
+
 
 # -------------------
 # DB Dependency
