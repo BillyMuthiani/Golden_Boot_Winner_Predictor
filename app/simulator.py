@@ -1,51 +1,32 @@
 # app/simulator.py
 
-import pandas as pd
 import numpy as np
-from sqlalchemy.orm import Session
-from app.models import Prediction
-
-N_SIMULATIONS = 100_000
+from typing import List, Dict
+from .player_schema import PlayerStats
 
 
-def run_golden_boot_simulation(db: Session, league: str):
+SIMULATIONS = 1000
 
-    df = pd.read_csv("data/player_stats.csv")
 
-    player_names = df["player"].values
-    lambdas = df["xg"].values
+def run_monte_carlo(players: List[PlayerStats]) -> Dict[str, float]:
 
-    simulations = np.random.poisson(
-        lam=lambdas,
-        size=(N_SIMULATIONS, len(df))
-    )
+    win_counts = {p.player: 0 for p in players}
 
-    winners = np.argmax(simulations, axis=1)
-    win_counts = np.bincount(winners, minlength=len(df))
-    probabilities = win_counts / N_SIMULATIONS
+    for _ in range(SIMULATIONS):
 
-    # delete old league predictions
-    db.query(Prediction).filter(Prediction.league == league).delete()
+        simulated_goals = {}
 
-    results = []
+        for p in players:
+            # Simple Poisson model using xG
+            simulated = np.random.poisson(lam=p.xg)
+            simulated_goals[p.player] = simulated
 
-    for i, row in df.iterrows():
-        prediction = Prediction(
-            league=league,
-            player=row["player"],
-            team=row["team"],
-            goals=int(row["goals"]),
-            xg=float(row["xg"]),
-            adjusted_xg_per_90=float(row.get("adjusted_xg_per_90", 0)),
-            finishing_diff_per_90=float(row.get("finishing_diff_per_90", 0)),
-            remaining_xg_adjusted=float(row.get("remaining_xg_adjusted", 0)),
-            expected_total_goals=float(row.get("expected_total_goals", row["xg"])),
-            probability=float(probabilities[i]),
-        )
+        winner = max(simulated_goals, key=simulated_goals.get)
+        win_counts[winner] += 1
 
-        db.add(prediction)
-        results.append(prediction)
+    probabilities = {
+        player: win_counts[player] / SIMULATIONS
+        for player in win_counts
+    }
 
-    db.commit()
-
-    return sorted(results, key=lambda x: x.probability, reverse=True)
+    return probabilities
