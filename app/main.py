@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from app.database import SessionLocal
 from app.models import Prediction
 from app.simulator import run_golden_boot_simulation
-from generate_data import fetch_data
+from data.generate_data import fetch_data
 
 app = FastAPI()
 
