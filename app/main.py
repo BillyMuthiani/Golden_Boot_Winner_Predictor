@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from datetime import datetime, timedelta
+
+from sqlalchemy import engine
 from app.database import SessionLocal
 from app.models import Prediction
 from app.simulator import run_golden_boot_simulation
@@ -76,3 +78,9 @@ def get_golden_boot(league: str, season: str):
     db.close()
 
     return results
+
+from app.database import engine
+from app.models import Base
+
+Base.metadata.drop_all(bind=engine)
+Base.metadata.create_all(bind=engine)
