@@ -9,6 +9,10 @@ app = FastAPI()
 
 CACHE_HOURS = 6  # predictions valid for 6 hours
 
+@app.get("/")
+def root():
+    return {"message": "Golden Boot API is running 🚀"}
+
 
 @app.get("/goldenboot")
 def get_golden_boot(league: str, season: str):
@@ -40,7 +44,7 @@ def get_golden_boot(league: str, season: str):
     fetch_data(league, season)
 
     # Run simulation
-    predictions = run_golden_boot_simulation(league)
+    predictions = run_golden_boot_simulation(db, league)
 
     # Delete old predictions
     db.query(Prediction).filter(
@@ -55,9 +59,9 @@ def get_golden_boot(league: str, season: str):
             team=p["team"],
             goals=p["goals"],
             xg=p["xg"],
-            adjusted_xg_per_90=p["adjusted_xG_per_90"],
+            adjusted_xg_per_90=p["adjusted_xg_per_90"],
             finishing_diff_per_90=p["finishing_diff_per_90"],
-            remaining_xg_adjusted=p["remaining_xG_adjusted"],
+            remaining_xg_adjusted=p["remaining_xg_adjusted"],
             expected_total_goals=p["expected_total"],
             probability=p["prob_top_scorer"]
         )
