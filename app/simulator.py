@@ -1,34 +1,59 @@
 # app/simulator.py
 
+import pandas as pd
 import numpy as np
-from typing import List, Dict
-from app.models import PlayerStats
-
+from sqlalchemy.orm import Session
+from app.models import Prediction
 
 N_SIMULATIONS = 100_000
 
 
-def run_monte_carlo(players: List[PlayerStats]) -> Dict[str, float]:
+def run_golden_boot_simulation(db: Session, league: str):
     """
-    Runs Monte Carlo simulation and returns
-    {player_name: probability_of_winning}
+    Full pipeline:
+    1. Load CSV
+    2. Run Monte Carlo
+    3. Store results in DB
     """
 
-    goal_counts = {p.player: 0 for p in players}
+    df = pd.read_csv("data/player_stats.csv")
 
-    for _ in range(N_SIMULATIONS):
-        simulated = {}
+    player_names = df["player"].values
+    lambdas = df["xg"].values
 
-        for p in players:
-            # Using xG as Poisson lambda
-            simulated[p.player] = np.random.poisson(p.xg)
+    # Vectorized Monte Carlo (FAST)
+    simulations = np.random.poisson(
+        lam=lambdas,
+        size=(N_SIMULATIONS, len(df))
+    )
 
-        winner = max(simulated, key=simulated.get)
-        goal_counts[winner] += 1
+    winners = np.argmax(simulations, axis=1)
+    win_counts = np.bincount(winners, minlength=len(df))
 
-    probabilities = {
-        player: wins / N_SIMULATIONS
-        for player, wins in goal_counts.items()
-    }
+    probabilities = win_counts / N_SIMULATIONS
 
-    return probabilities
+    # Delete old predictions for this league
+    db.query(Prediction).filter(Prediction.league == league).delete()
+
+    results = []
+
+    for i, row in df.iterrows():
+        prediction = Prediction(
+            league=league,
+            player=row["player"],
+            team=row["team"],
+            goals=int(row["goals"]),
+            xg=float(row["xg"]),
+            adjusted_xg_per_90=float(row.get("adjusted_xg_per_90", 0)),
+            finishing_diff_per_90=float(row.get("finishing_diff_per_90", 0)),
+            remaining_xg_adjusted=float(row.get("remaining_xg_adjusted", 0)),
+            expected_total_goals=float(row.get("expected_total_goals", row["xg"])),
+            probability=float(probabilities[i]),
+        )
+
+        db.add(prediction)
+        results.append(prediction)
+
+    db.commit()
+
+    return sorted(results, key=lambda x: x.probability, reverse=True)
