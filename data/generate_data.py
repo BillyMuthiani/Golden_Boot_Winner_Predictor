@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 
-def fetch_data(league: str, season: str):
+def fetch_data(league: str, season: int):
     """
     Fetch player stats and schedule from Understat
     and overwrite CSV files.
@@ -15,8 +15,8 @@ def fetch_data(league: str, season: str):
 
     try:
         understat = sd.Understat(
-            leagues=league,
-            seasons=season
+            leagues=[league],
+            seasons=[int(season)]
         )
 
         player_stats = understat.read_player_season_stats().reset_index()

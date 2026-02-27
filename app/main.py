@@ -17,7 +17,7 @@ def root():
 
 
 @app.get("/goldenboot")
-def get_golden_boot(league: str, season: str):
+def get_golden_boot(league: str, season: int):
 
     db = SessionLocal()
 
@@ -82,5 +82,4 @@ def get_golden_boot(league: str, season: str):
 from app.database import engine
 from app.models import Base
 
-Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
