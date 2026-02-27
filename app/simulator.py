@@ -9,19 +9,12 @@ N_SIMULATIONS = 100_000
 
 
 def run_golden_boot_simulation(db: Session, league: str):
-    """
-    Full pipeline:
-    1. Load CSV
-    2. Run Monte Carlo
-    3. Store results in DB
-    """
 
     df = pd.read_csv("data/player_stats.csv")
 
     player_names = df["player"].values
     lambdas = df["xg"].values
 
-    # Vectorized Monte Carlo (FAST)
     simulations = np.random.poisson(
         lam=lambdas,
         size=(N_SIMULATIONS, len(df))
@@ -29,10 +22,9 @@ def run_golden_boot_simulation(db: Session, league: str):
 
     winners = np.argmax(simulations, axis=1)
     win_counts = np.bincount(winners, minlength=len(df))
-
     probabilities = win_counts / N_SIMULATIONS
 
-    # Delete old predictions for this league
+    # delete old league predictions
     db.query(Prediction).filter(Prediction.league == league).delete()
 
     results = []
