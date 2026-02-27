@@ -1,10 +1,14 @@
-from sqlalchemy import Column, Integer, Float, String
+from sqlalchemy import Column, Integer, Float, String, DateTime
+from datetime import datetime
 from .database import Base
 
 class Prediction(Base):
     __tablename__ = "predictions"
 
     id = Column(Integer, primary_key=True, index=True)
+
+    league = Column(String, index=True)
+
     player = Column(String)
     team = Column(String)
 
@@ -18,11 +22,4 @@ class Prediction(Base):
 
     probability = Column(Float)
 
-
-class GoldenBootResult(Base):
-    __tablename__ = "golden_boot_results"
-
-    id = Column(Integer, primary_key=True, index=True)
-    league = Column(String, index=True)
-    player_name = Column(String, index=True)
-    win_probability = Column(Float)    
+    computed_at = Column(DateTime, default=datetime.utcnow)

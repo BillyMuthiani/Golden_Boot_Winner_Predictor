@@ -1,104 +1,74 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from .database import SessionLocal, engine
-from .models import Base, GoldenBootResult
-from .simulator import run_golden_boot_simulation
-from data.generate_data import generate_data
-
+from fastapi import FastAPI
+from datetime import datetime, timedelta
+from app.database import SessionLocal
+from app.models import Prediction
+from app.simulator import run_golden_boot_simulation
+from generate_data import fetch_data
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+CACHE_HOURS = 6  # predictions valid for 6 hours
 
-import soccerdata
-print("Soccerdata version:", soccerdata.__version__)
-
-
-# -------------------
-# DB Dependency
-# -------------------
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-# -------------------
-# Root
-# -------------------
-
-@app.get("/")
-def root():
-    return {"status": "Golden Boot API running"}
-
-
-# -------------------
-# Run Simulation
-# -------------------
-
-@app.post("/run-simulation")
-def run_simulation(
-    league: str,
-    season: str = "2025",
-    n_simulations: int = 100000,
-    db: Session = Depends(get_db)
-):
-
-    # 1️⃣ Fetch fresh data and save CSV
-    generate_data(league, season)
-
-    # 2️⃣ Run simulation
-    results = run_golden_boot_simulation(
-        league=league,
-        season=season,
-        n_simulations=n_simulations
-    )
-
-    # 3️⃣ Delete old results for this league only
-    db.query(GoldenBootResult)\
-      .filter(GoldenBootResult.league == league)\
-      .delete()
-
-    db.commit()
-
-    # 4️⃣ Store new results
-    for r in results:
-        db.add(GoldenBootResult(
-            league=league,
-            player_name=r["player_name"],
-            win_probability=r["prob_top_scorer"]
-        ))
-
-    db.commit()
-
-    return {
-        "status": f"{league} simulation complete",
-        "top_5": results[:5]
-    }
-
-
-# -------------------
-# Get Results
-# -------------------
 
 @app.get("/goldenboot")
-def golden_boot(
-    league: str,
-    db: Session = Depends(get_db)
-):
+def get_golden_boot(league: str, season: str):
 
-    results = db.query(GoldenBootResult)\
-        .filter(GoldenBootResult.league == league)\
-        .order_by(GoldenBootResult.win_probability.desc())\
-        .all()
+    db = SessionLocal()
 
-    return [
-        {
-            "player": r.player_name,
-            "win_probability": r.win_probability
-        }
-        for r in results
-    ]
+    # Check if predictions already exist
+    existing = db.query(Prediction).filter(
+        Prediction.league == league
+    ).first()
+
+    if existing:
+        # Check how old they are
+        time_diff = datetime.utcnow() - existing.computed_at
+
+        if time_diff < timedelta(hours=CACHE_HOURS):
+            print("Returning cached predictions.")
+            results = db.query(Prediction).filter(
+                Prediction.league == league
+            ).order_by(Prediction.probability.desc()).all()
+
+            db.close()
+            return results
+
+    # If no recent predictions → recompute
+    print("Cache expired or not found. Recomputing...")
+
+    # Fetch fresh data
+    fetch_data(league, season)
+
+    # Run simulation
+    predictions = run_golden_boot_simulation(league)
+
+    # Delete old predictions
+    db.query(Prediction).filter(
+        Prediction.league == league
+    ).delete()
+
+    # Store new predictions
+    for p in predictions:
+        record = Prediction(
+            league=league,
+            player=p["player"],
+            team=p["team"],
+            goals=p["goals"],
+            xg=p["xg"],
+            adjusted_xg_per_90=p["adjusted_xG_per_90"],
+            finishing_diff_per_90=p["finishing_diff_per_90"],
+            remaining_xg_adjusted=p["remaining_xG_adjusted"],
+            expected_total_goals=p["expected_total"],
+            probability=p["prob_top_scorer"]
+        )
+        db.add(record)
+
+    db.commit()
+
+    results = db.query(Prediction).filter(
+        Prediction.league == league
+    ).order_by(Prediction.probability.desc()).all()
+
+    db.close()
+
+    return results
