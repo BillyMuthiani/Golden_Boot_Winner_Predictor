@@ -4,7 +4,7 @@ import soccerdata as sd
 import pandas as pd
 
 
-def fetch_player_data(league: str, season: int) -> pd.DataFrame:
+def fetch_player_data(league: str, season: str) -> pd.DataFrame:
     """
     Fetch player season stats from Understat.
     Returns a pandas DataFrame.
