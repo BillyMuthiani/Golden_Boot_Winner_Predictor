@@ -12,16 +12,6 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
-
-@app.get("/migrate")
-def run_migration():
-    with engine.connect() as conn:
-        conn.execute(text("ALTER TABLE predictions ADD COLUMN season INTEGER;"))
-        conn.execute(text("UPDATE predictions SET season = 2025 WHERE season IS NULL;"))
-        conn.commit()
-    return {"status": "migration complete"}
-
-
 @app.get("/goldenboot")
 def get_golden_boot(
     league: str,
