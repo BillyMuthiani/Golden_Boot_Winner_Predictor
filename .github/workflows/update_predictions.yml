@@ -27,4 +27,4 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          python scripts/update_predictions.py
+          python -m scripts.update_predictions.py
