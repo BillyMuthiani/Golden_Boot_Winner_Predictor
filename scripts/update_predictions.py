@@ -7,8 +7,8 @@ from app.simulator import run_monte_carlo # if you have this
 from app.player_schema import PlayerStats
 from app.models import Prediction
 
-LEAGUE = "EPL"
-SEASON = 2024
+LEAGUE = "ENG-Premier League"
+SEASON = 2526
 
 
 def main():
