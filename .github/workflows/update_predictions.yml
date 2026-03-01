@@ -1,9 +1,11 @@
-name: Update Predictions
+name: Update Golden Boot Predictions
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # Every 6 hours
-  workflow_dispatch:        # Allow manual run from GitHub UI
+    # Runs every day at 02:00 UTC
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:  # allows manual run from GitHub UI
 
 jobs:
   update:
@@ -23,8 +25,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run update script
+      - name: Verify project structure (debug step)
+        run: ls -R
+
+      - name: Run predictions update script
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: |
-          python -m scripts.update_predictions.py
+        run: python -m scripts.update_predictions
